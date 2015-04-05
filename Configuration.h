@@ -368,6 +368,14 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define Z_MAX_POS MANUAL_Z_HOME_POS
 #define Z_MIN_POS 0
 
+#define A_MIN_POS -0.5235987755982989 //sh -30 degree
+#define A_MAX_POS 0.5235987755982989  //sh  30 degree
+#define B_MIN_POS -0.5235987755982989
+#define B_MAX_POS 0.5235987755982989
+#define C_MIN_POS 0
+#define C_MAX_POS 0
+
+
 #define X_MAX_LENGTH (X_MAX_POS - X_MIN_POS)
 #define Y_MAX_LENGTH (Y_MAX_POS - Y_MIN_POS)
 #define Z_MAX_LENGTH (Z_MAX_POS - Z_MIN_POS)
@@ -456,7 +464,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define MANUAL_Z_HOME_POS 200  // For delta: Distance between nozzle and print surface after homing. NCKU
 
 //// MOVEMENT SETTINGS
-#define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
+#define NUM_AXIS 7 // The axis order in all axis related arrays is X, Y, Z, E, A, B, C  sh
 #define HOMING_FEEDRATE {50*60, 50*60, 50*60, 0}  // set the homing speeds (mm/min)
 
 // default settings

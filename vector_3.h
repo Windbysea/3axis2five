@@ -27,7 +27,7 @@ struct vector_3
 	float x, y, z;
 
         vector_3();
-	vector_3(float x, float y, float z);
+        vector_3(float x, float y, float z);
 
 	static vector_3 cross(vector_3 a, vector_3 b);
 

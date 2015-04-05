@@ -69,7 +69,7 @@
 //Implemented Codes
 //-------------------
 // G0  -> G1
-// G1  - Coordinated Movement X Y Z E
+// G1  - Coordinated Movement X Y Z E A B C
 // G2  - CW ARC
 // G3  - CCW ARC
 // G4  - Dwell S<seconds> or P<milliseconds>
@@ -196,14 +196,14 @@ float volumetric_multiplier[EXTRUDERS] = {1.0
     #endif
   #endif
 };
-float current_position[NUM_AXIS] = { 0.0, 0.0, 0.0, 0.0 };
+float current_position[NUM_AXIS] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // sh
 float add_homeing[3]={0,0,0};
 #ifdef DELTA
 float endstop_adj[3]={0,0,0};
 #endif
-float min_pos[3] = { X_MIN_POS, Y_MIN_POS, Z_MIN_POS };
-float max_pos[3] = { X_MAX_POS, Y_MAX_POS, Z_MAX_POS };
-bool axis_known_position[3] = {false, false, false};
+float min_pos[6] = { X_MIN_POS, Y_MIN_POS, Z_MIN_POS , A_MIN_POS, B_MIN_POS, C_MIN_POS}; //sh
+float max_pos[6] = { X_MAX_POS, Y_MAX_POS, Z_MAX_POS , A_MAX_POS, B_MAX_POS, C_MAX_POS}; //sh
+bool axis_known_position[6] = {false, false, false, false, false, false}; //sh
 float zprobe_zoffset;
 
 // Extruder offset
@@ -246,7 +246,7 @@ int EtoPPressure=0;
 #endif
 
 #ifdef DELTA
-float delta[3] = {0.0, 0.0, 0.0};
+float delta[3] = {0.0, 0.0, 0.0}; // three pillo
 #endif
 
 #ifdef NONLINEAR_BED_LEVELING
@@ -256,8 +256,8 @@ float bed_level[ACCURATE_BED_LEVELING_POINTS][ACCURATE_BED_LEVELING_POINTS];
 //===========================================================================
 //=============================private variables=============================
 //===========================================================================
-const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
-static float destination[NUM_AXIS] = {  0.0, 0.0, 0.0, 0.0};
+const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E', 'A', 'B', 'C'}; // sh
+static float destination[NUM_AXIS] = {  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; //sh
 static float offset[3] = {0.0, 0.0, 0.0};
 static bool home_all_axis = true;
 static float feedrate = 1500.0, next_feedrate, saved_feedrate;
@@ -791,7 +791,7 @@ static int x_home_dir(int extruder) {
 
 static float inactive_extruder_x_pos = X2_MAX_POS; // used in mode 0 & 1
 static bool active_extruder_parked = false; // used in mode 1 & 2
-static float raised_parked_position[NUM_AXIS]; // used in mode 1
+static float raised_parked_position[4]; // used in mode 1 NUM_AXIS
 static unsigned long delayed_move_time = 0; // used in mode 1
 static float duplicate_extruder_x_offset = DEFAULT_DUPLICATION_X_OFFSET; // used in mode 2
 static float duplicate_extruder_temp_offset = 0; // used in mode 2
@@ -1273,7 +1273,7 @@ void process_commands() //gcode
     case 0: // G0 -> G1
     case 1: // G1
       if(Stopped == false) {
-        get_coordinates(); // For X Y Z E F
+        get_coordinates(); // For X Y Z E F  plus A B C
         prepare_move();
         //ClearToSend();
         return;
@@ -3208,9 +3208,9 @@ void ClearToSend()
   SERIAL_PROTOCOLLNPGM(MSG_OK);
 }
 
-void get_coordinates()
+void get_coordinates() // get value of x y z e a b c 
 {
-  bool seen[4]={false,false,false,false};
+  bool seen[7]={false,false,false,false,false,false,false}; //sh
   for(int8_t i=0; i < NUM_AXIS; i++) {
     if(code_seen(axis_codes[i]))
     {
@@ -3286,18 +3286,24 @@ void get_arc_coordinates()
    }
 }
 
-void clamp_to_software_endstops(float target[3])
+void clamp_to_software_endstops(float target[7]) //sh call by refrence?
 {
   if (min_software_endstops) {
-    if (target[X_AXIS] < min_pos[X_AXIS]) target[X_AXIS] = min_pos[X_AXIS];
-    if (target[Y_AXIS] < min_pos[Y_AXIS]) target[Y_AXIS] = min_pos[Y_AXIS];
-    if (target[Z_AXIS] < min_pos[Z_AXIS]) target[Z_AXIS] = min_pos[Z_AXIS];
+    if (target[X_AXIS] < min_pos[X_AXIS]) target[X_AXIS] = min_pos[X_AXIS];//0
+    if (target[Y_AXIS] < min_pos[Y_AXIS]) target[Y_AXIS] = min_pos[Y_AXIS];//1//1
+    if (target[Z_AXIS] < min_pos[Z_AXIS]) target[Z_AXIS] = min_pos[Z_AXIS];//2//2
+    if (target[A_AXIS] < min_pos[A_AXIS-1]) target[A_AXIS] = min_pos[A_AXIS-1];//4//3
+    if (target[B_AXIS] < min_pos[B_AXIS-1]) target[B_AXIS] = min_pos[B_AXIS-1];//4//4
+    if (target[C_AXIS] < min_pos[C_AXIS-1]) target[C_AXIS] = min_pos[C_AXIS-1];//5
   }
 
   if (max_software_endstops) {
     if (target[X_AXIS] > max_pos[X_AXIS]) target[X_AXIS] = max_pos[X_AXIS];
     if (target[Y_AXIS] > max_pos[Y_AXIS]) target[Y_AXIS] = max_pos[Y_AXIS];
     if (target[Z_AXIS] > max_pos[Z_AXIS]) target[Z_AXIS] = max_pos[Z_AXIS];
+    if (target[A_AXIS] > max_pos[A_AXIS-1]) target[A_AXIS] = max_pos[A_AXIS-1];//3//3
+    if (target[B_AXIS] > max_pos[B_AXIS-1]) target[B_AXIS] = max_pos[B_AXIS-1];//4//4
+    if (target[C_AXIS] > max_pos[C_AXIS-1]) target[C_AXIS] = max_pos[C_AXIS-1];//5
   }
 }
 
@@ -3386,7 +3392,8 @@ void prepare_move()
   previous_millis_cmd = millis();
 #ifdef DELTA
   float difference[NUM_AXIS];
-  for (int8_t i=0; i < NUM_AXIS; i++) {
+  for (int8_t i=0; i < NUM_AXIS; i++) 
+  {
     difference[i] = destination[i] - current_position[i];
   }
   float cartesian_mm = sqrt(sq(difference[X_AXIS]) +
@@ -3399,10 +3406,12 @@ void prepare_move()
   // SERIAL_ECHOPGM("mm="); SERIAL_ECHO(cartesian_mm);
   // SERIAL_ECHOPGM(" seconds="); SERIAL_ECHO(seconds);
   // SERIAL_ECHOPGM(" steps="); SERIAL_ECHOLN(steps);
-  for (int s = 1; s <= steps; s++) {
+  for (int s = 1; s <= steps; s++) 
+  {
     float fraction = float(s) / float(steps);
-    for(int8_t i=0; i < NUM_AXIS; i++) {
-      destination[i] = current_position[i] + difference[i] * fraction;
+    for(int8_t i=0; i < NUM_AXIS; i++) 
+    {
+      destination[i] = current_position[i] + difference[i] * fraction; // 1...N/ N
     }
     calculate_delta(destination);
     #ifdef NONLINEAR_BED_LEVELING
