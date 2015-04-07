@@ -120,18 +120,32 @@
 // Horizontal distance bridged by diagonal push rods when effector is centered.
 #define DELTA_RADIUS (DELTA_SMOOTH_ROD_OFFSET-DELTA_EFFECTOR_OFFSET-DELTA_CARRIAGE_OFFSET)
 
+// Horizontal distance from effector to tower(without carriages) sh
+#define DELTA_RADIUS_NEW (DELTA_SMOOTH_ROD_OFFSET-DELTA_CARRIAGE_OFFSET)
+
 // Print surface diameter/2 minus unreachable space (avoid collisions with vertical towers).
 #define DELTA_PRINTABLE_RADIUS 70.0
 
 // Effective X/Y positions of the three vertical towers.
 #define SIN_60 0.8660254037844386
 #define COS_60 0.5
+#define PI     3.1415926535898
+#define D2R    PI/180
 #define DELTA_TOWER1_X -SIN_60*DELTA_RADIUS // front left tower
 #define DELTA_TOWER1_Y -COS_60*DELTA_RADIUS
 #define DELTA_TOWER2_X SIN_60*DELTA_RADIUS // front right tower
 #define DELTA_TOWER2_Y -COS_60*DELTA_RADIUS
 #define DELTA_TOWER3_X 0.0 // back middle tower
 #define DELTA_TOWER3_Y DELTA_RADIUS
+
+// Effective X/Y positions of the three vertical towers(new for angle). sh
+#define DELTA_TOWER1_X_NEW -SIN_60*DELTA_RADIUS_NEW // front left tower
+#define DELTA_TOWER1_Y_NEW -COS_60*DELTA_RADIUS_NEW
+#define DELTA_TOWER2_X_NEW SIN_60*DELTA_RADIUS_NEW // front right tower
+#define DELTA_TOWER2_Y_NEW -COS_60*DELTA_RADIUS_NEW
+#define DELTA_TOWER3_X_NEW 0.0 // back middle tower
+#define DELTA_TOWER3_Y_NEW DELTA_RADIUS_NEW
+
 
 // Diagonal rod squared
 #define DELTA_DIAGONAL_ROD_2 pow(DELTA_DIAGONAL_ROD,2)
