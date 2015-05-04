@@ -167,7 +167,7 @@ void manage_inactivity();
 #endif
 
 
-enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3, A_AXIS=4, B_AXIS=5, C_AXIS=6}; //sh
+enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3};
 
 
 void FlushSerialRequestResend();
@@ -212,9 +212,9 @@ extern float add_homeing[3];
 #ifdef DELTA
 extern float endstop_adj[3];
 #endif
-extern float min_pos[6];//sh
-extern float max_pos[6];//sh
-extern bool axis_known_position[6];//sh
+extern float min_pos[3];
+extern float max_pos[3];
+extern bool axis_known_position[3];
 extern float zprobe_zoffset;
 extern int fanSpeed;
 #ifdef BARICUDA

@@ -69,7 +69,7 @@
 //Implemented Codes
 //-------------------
 // G0  -> G1
-// G1  - Coordinated Movement X Y Z E A B C
+// G1  - Coordinated Movement X Y Z E
 // G2  - CW ARC
 // G3  - CCW ARC
 // G4  - Dwell S<seconds> or P<milliseconds>
@@ -196,14 +196,14 @@ float volumetric_multiplier[EXTRUDERS] = {1.0
     #endif
   #endif
 };
-float current_position[NUM_AXIS] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // sh
+float current_position[NUM_AXIS] = { 0.0, 0.0, 0.0, 0.0 };
 float add_homeing[3]={0,0,0};
 #ifdef DELTA
 float endstop_adj[3]={0,0,0};
 #endif
-float min_pos[6] = { X_MIN_POS, Y_MIN_POS, Z_MIN_POS , A_MIN_POS, B_MIN_POS, C_MIN_POS}; //sh
-float max_pos[6] = { X_MAX_POS, Y_MAX_POS, Z_MAX_POS , A_MAX_POS, B_MAX_POS, C_MAX_POS}; //sh
-bool axis_known_position[6] = {false, false, false, false, false, false}; //sh
+float min_pos[3] = { X_MIN_POS, Y_MIN_POS, Z_MIN_POS };
+float max_pos[3] = { X_MAX_POS, Y_MAX_POS, Z_MAX_POS };
+bool axis_known_position[3] = {false, false, false};
 float zprobe_zoffset;
 
 // Extruder offset
@@ -246,18 +246,7 @@ int EtoPPressure=0;
 #endif
 
 #ifdef DELTA
-float delta[3] = {0.0, 0.0, 0.0}; // three tower's z
-float plat1[3] = {-SIN_60*DELTA_EFFECTOR_OFFSET, -COS_60*DELTA_EFFECTOR_OFFSET, 0.0}; // three corner front left relative to plate
-float plat2[3] = { SIN_60*DELTA_EFFECTOR_OFFSET,  COS_60*DELTA_EFFECTOR_OFFSET, 0.0}; // three corner front right relative to plate
-float plat3[3] = {0.0, DELTA_EFFECTOR_OFFSET, 0.0}; // three corner behind relative to plate
-float plat1temp[3] = {0.0, 0.0, 0.0};
-float plat2temp[3] = {0.0, 0.0, 0.0};
-float plat3temp[3] = {0.0, 0.0, 0.0};
-float plat1final[3] = {0.0, 0.0, 0.0}; //plus destination
-float plat2final[3] = {0.0, 0.0, 0.0};
-float plat3final[3] = {0.0, 0.0, 0.0};
-
-
+float delta[3] = {0.0, 0.0, 0.0};
 #endif
 
 #ifdef NONLINEAR_BED_LEVELING
@@ -267,8 +256,8 @@ float bed_level[ACCURATE_BED_LEVELING_POINTS][ACCURATE_BED_LEVELING_POINTS];
 //===========================================================================
 //=============================private variables=============================
 //===========================================================================
-const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E', 'A', 'B', 'C'}; // sh
-static float destination[NUM_AXIS] = {  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; //sh
+const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
+static float destination[NUM_AXIS] = {  0.0, 0.0, 0.0, 0.0};
 static float offset[3] = {0.0, 0.0, 0.0};
 static bool home_all_axis = true;
 static float feedrate = 1500.0, next_feedrate, saved_feedrate;
@@ -525,7 +514,7 @@ void loop()
     #ifdef SDSUPPORT
       if(card.saving)
       {
-        if(strstr_P(cmdbuffer[bufindr], PSTR("M29")) == NULL)//M29 stop sd write
+        if(strstr_P(cmdbuffer[bufindr], PSTR("M29")) == NULL)
         {
           card.write_command(cmdbuffer[bufindr]);
           if(card.logging)
@@ -802,7 +791,7 @@ static int x_home_dir(int extruder) {
 
 static float inactive_extruder_x_pos = X2_MAX_POS; // used in mode 0 & 1
 static bool active_extruder_parked = false; // used in mode 1 & 2
-static float raised_parked_position[4]; // used in mode 1 NUM_AXIS
+static float raised_parked_position[NUM_AXIS]; // used in mode 1
 static unsigned long delayed_move_time = 0; // used in mode 1
 static float duplicate_extruder_x_offset = DEFAULT_DUPLICATION_X_OFFSET; // used in mode 2
 static float duplicate_extruder_temp_offset = 0; // used in mode 2
@@ -1270,7 +1259,7 @@ void refresh_cmd_timeout(void)
   previous_millis_cmd = millis();
 }
 
-void process_commands() //gcode
+void process_commands()
 {
   unsigned long codenum; //throw away variable
   char *starpos = NULL;
@@ -1284,7 +1273,7 @@ void process_commands() //gcode
     case 0: // G0 -> G1
     case 1: // G1
       if(Stopped == false) {
-        get_coordinates(); // For X Y Z E F  plus A B C
+        get_coordinates(); // For X Y Z E F
         prepare_move();
         //ClearToSend();
         return;
@@ -1777,7 +1766,7 @@ void process_commands() //gcode
     }
   }
 
-  else if(code_seen('M'))//mcode
+  else if(code_seen('M'))
   {
     switch( (int)code_value() )
     {
@@ -3219,9 +3208,9 @@ void ClearToSend()
   SERIAL_PROTOCOLLNPGM(MSG_OK);
 }
 
-void get_coordinates() // get value of x y z e a b c 
+void get_coordinates()
 {
-  bool seen[7]={false,false,false,false,false,false,false}; //sh
+  bool seen[4]={false,false,false,false};
   for(int8_t i=0; i < NUM_AXIS; i++) {
     if(code_seen(axis_codes[i]))
     {
@@ -3297,110 +3286,39 @@ void get_arc_coordinates()
    }
 }
 
-void clamp_to_software_endstops(float target[7]) //sh call by refrence?
+void clamp_to_software_endstops(float target[3])
 {
   if (min_software_endstops) {
-    if (target[X_AXIS] < min_pos[X_AXIS]) target[X_AXIS] = min_pos[X_AXIS];//0
-    if (target[Y_AXIS] < min_pos[Y_AXIS]) target[Y_AXIS] = min_pos[Y_AXIS];//1//1
-    if (target[Z_AXIS] < min_pos[Z_AXIS]) target[Z_AXIS] = min_pos[Z_AXIS];//2//2
-    if (target[A_AXIS] < min_pos[A_AXIS-1]) target[A_AXIS] = min_pos[A_AXIS-1];//4//3
-    if (target[B_AXIS] < min_pos[B_AXIS-1]) target[B_AXIS] = min_pos[B_AXIS-1];//4//4
-    if (target[C_AXIS] < min_pos[C_AXIS-1]) target[C_AXIS] = min_pos[C_AXIS-1];//5
+    if (target[X_AXIS] < min_pos[X_AXIS]) target[X_AXIS] = min_pos[X_AXIS];
+    if (target[Y_AXIS] < min_pos[Y_AXIS]) target[Y_AXIS] = min_pos[Y_AXIS];
+    if (target[Z_AXIS] < min_pos[Z_AXIS]) target[Z_AXIS] = min_pos[Z_AXIS];
   }
 
   if (max_software_endstops) {
     if (target[X_AXIS] > max_pos[X_AXIS]) target[X_AXIS] = max_pos[X_AXIS];
     if (target[Y_AXIS] > max_pos[Y_AXIS]) target[Y_AXIS] = max_pos[Y_AXIS];
     if (target[Z_AXIS] > max_pos[Z_AXIS]) target[Z_AXIS] = max_pos[Z_AXIS];
-    if (target[A_AXIS] > max_pos[A_AXIS-1]) target[A_AXIS] = max_pos[A_AXIS-1];//3//3
-    if (target[B_AXIS] > max_pos[B_AXIS-1]) target[B_AXIS] = max_pos[B_AXIS-1];//4//4
-    if (target[C_AXIS] > max_pos[C_AXIS-1]) target[C_AXIS] = max_pos[C_AXIS-1];//5
   }
 }
 
 #ifdef DELTA
-void calculate_delta(float cartesian[7])// X0 Y1 Z2 E3 A4 B5 C6
+void calculate_delta(float cartesian[3])
 {
-  //plat corner1 front left
-  plat1temp[0] = cos(cartesian[C_AXIS]*D2R)*cos(cartesian[B_AXIS]*D2R)*plat1[0]
-              +( cos(cartesian[C_AXIS]*D2R)*sin(cartesian[B_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R)
-               - sin(cartesian[C_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R) )*plat1[1]
-              +( cos(cartesian[C_AXIS]*D2R)*sin(cartesian[B_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R)
-               + sin(cartesian[C_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R) )*plat1[2];
-  
-  plat1temp[1] = sin(cartesian[C_AXIS]*D2R)*cos(cartesian[B_AXIS]*D2R)*plat1[0]
-              +( cos(cartesian[C_AXIS]*D2R)*sin(cartesian[B_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R)
-               + cos(cartesian[C_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R) )*plat1[1]
-              +( sin(cartesian[C_AXIS]*D2R)*sin(cartesian[B_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R)
-               - cos(cartesian[C_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R) )*plat1[2];
-               
-  plat1temp[2] = -sin(cartesian[B_AXIS]*D2R)*plat1[0] 
-                 +cos(cartesian[B_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R)*plat1[1]
-                 +cos(cartesian[B_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R)*plat1[2];
 
-  //plat corner2 front right
-  plat2temp[0] = cos(cartesian[C_AXIS]*D2R)*cos(cartesian[B_AXIS]*D2R)*plat2[0]
-              +( cos(cartesian[C_AXIS]*D2R)*sin(cartesian[B_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R)
-               - sin(cartesian[C_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R) )*plat2[1]
-              +( cos(cartesian[C_AXIS]*D2R)*sin(cartesian[B_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R)
-               + sin(cartesian[C_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R) )*plat2[2];
-  
-  plat2temp[1] = sin(cartesian[C_AXIS]*D2R)*cos(cartesian[B_AXIS]*D2R)*plat2[0]
-              +( cos(cartesian[C_AXIS]*D2R)*sin(cartesian[B_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R)
-               + cos(cartesian[C_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R) )*plat2[1]
-              +( sin(cartesian[C_AXIS]*D2R)*sin(cartesian[B_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R)
-               - cos(cartesian[C_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R) )*plat2[2];
-               
-  plat2temp[2] = -sin(cartesian[B_AXIS]*D2R)*plat2[0] 
-                 +cos(cartesian[B_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R)*plat2[1]
-                 +cos(cartesian[B_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R)*plat2[2];
 
-  //plat corner3 back
-  plat3temp[0] = cos(cartesian[C_AXIS]*D2R)*cos(cartesian[B_AXIS]*D2R)*plat3[0]
-              +( cos(cartesian[C_AXIS]*D2R)*sin(cartesian[B_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R)
-               - sin(cartesian[C_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R) )*plat3[1]
-              +( cos(cartesian[C_AXIS]*D2R)*sin(cartesian[B_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R)
-               + sin(cartesian[C_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R) )*plat3[2];
-  
-  plat3temp[1] = sin(cartesian[C_AXIS]*D2R)*cos(cartesian[B_AXIS]*D2R)*plat3[0]
-              +( cos(cartesian[C_AXIS]*D2R)*sin(cartesian[B_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R)
-               + cos(cartesian[C_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R) )*plat3[1]
-              +( sin(cartesian[C_AXIS]*D2R)*sin(cartesian[B_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R)
-               - cos(cartesian[C_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R) )*plat3[2];
-               
-  plat3temp[2] = -sin(cartesian[B_AXIS]*D2R)*plat3[0] 
-                 +cos(cartesian[B_AXIS]*D2R)*sin(cartesian[A_AXIS]*D2R)*plat3[1]
-                 +cos(cartesian[B_AXIS]*D2R)*cos(cartesian[A_AXIS]*D2R)*plat3[2];
-
-  for(int8_t i=0; i <3; i++) //refresh coordernate
-  {
-    plat1[i] = plat1temp[i];
-    plat2[i] = plat2temp[i];
-    plat3[i] = plat3temp[i];
-  }
-
-  for(int8_t i=0; i <3; i++) //refresh coordernate fix -- plat -- 'platcorner'
-  {
-    plat1final[i] = plat1[i] + cartesian[i];
-    plat2final[i] = plat2[i] + cartesian[i];
-    plat3final[i] = plat3[i] + cartesian[i];
-  }
-    
 
   delta[X_AXIS] = sqrt(DELTA_DIAGONAL_ROD_2
-                       - sq(DELTA_TOWER1_X_NEW-plat1final[X_AXIS])
-                       - sq(DELTA_TOWER1_Y_NEW-plat1final[Y_AXIS])
-                       ) + plat1final[Z_AXIS];
-  
+                       - sq(DELTA_TOWER1_X-cartesian[X_AXIS])
+                       - sq(DELTA_TOWER1_Y-cartesian[Y_AXIS])
+                       ) + cartesian[Z_AXIS];
   delta[Y_AXIS] = sqrt(DELTA_DIAGONAL_ROD_2
-                       - sq(DELTA_TOWER2_X_NEW-plat2final[X_AXIS])
-                       - sq(DELTA_TOWER2_Y_NEW-plat2final[Y_AXIS])
-                       ) + plat2final[Z_AXIS];
-  
+                       - sq(DELTA_TOWER2_X-cartesian[X_AXIS])
+                       - sq(DELTA_TOWER2_Y-cartesian[Y_AXIS])
+                       ) + cartesian[Z_AXIS];
   delta[Z_AXIS] = sqrt(DELTA_DIAGONAL_ROD_2
-                       - sq(DELTA_TOWER3_X_NEW-plat3final[X_AXIS])
-                       - sq(DELTA_TOWER3_Y_NEW-plat3final[Y_AXIS])
-                       ) + plat3final[Z_AXIS];
+                       - sq(DELTA_TOWER3_X-cartesian[X_AXIS])
+                       - sq(DELTA_TOWER3_Y-cartesian[Y_AXIS])
+                       ) + cartesian[Z_AXIS];
   /*
   SERIAL_ECHOPGM("cartesian x="); SERIAL_ECHO(cartesian[X_AXIS]);
   SERIAL_ECHOPGM(" y="); SERIAL_ECHO(cartesian[Y_AXIS]);
@@ -3471,8 +3389,7 @@ void prepare_move()
   previous_millis_cmd = millis();
 #ifdef DELTA
   float difference[NUM_AXIS];
-  for (int8_t i=0; i < NUM_AXIS; i++) 
-  {
+  for (int8_t i=0; i < NUM_AXIS; i++) {
     difference[i] = destination[i] - current_position[i];
   }
   float cartesian_mm = sqrt(sq(difference[X_AXIS]) +
@@ -3485,12 +3402,10 @@ void prepare_move()
   // SERIAL_ECHOPGM("mm="); SERIAL_ECHO(cartesian_mm);
   // SERIAL_ECHOPGM(" seconds="); SERIAL_ECHO(seconds);
   // SERIAL_ECHOPGM(" steps="); SERIAL_ECHOLN(steps);
-  for (int s = 1; s <= steps; s++) 
-  {
+  for (int s = 1; s <= steps; s++) {
     float fraction = float(s) / float(steps);
-    for(int8_t i=0; i < NUM_AXIS; i++) 
-    {
-      destination[i] = current_position[i] + difference[i] * fraction; // 1...N/ N
+    for(int8_t i=0; i < NUM_AXIS; i++) {
+      destination[i] = current_position[i] + difference[i] * fraction;
     }
     calculate_delta(destination);
     #ifdef NONLINEAR_BED_LEVELING
@@ -3533,7 +3448,7 @@ void prepare_move()
       }
       delayed_move_time = 0;
       // unpark extruder: 1) raise, 2) move into starting XY position, 3) lower
-      plan_buffer_line(raised_parked_position[X_AXIS], raised_parked_position[Y_AXIS], raised_parked_position[Z_AXIS],current_position[E_AXIS], max_feedrate[Z_AXIS], active_extruder);
+      plan_buffer_line(raised_parked_position[X_AXIS], raised_parked_position[Y_AXIS], raised_parked_position[Z_AXIS],    current_position[E_AXIS], max_feedrate[Z_AXIS], active_extruder);
       plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], raised_parked_position[Z_AXIS],
           current_position[E_AXIS], min(max_feedrate[X_AXIS],max_feedrate[Y_AXIS]), active_extruder);
       plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS],

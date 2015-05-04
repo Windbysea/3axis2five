@@ -120,32 +120,18 @@
 // Horizontal distance bridged by diagonal push rods when effector is centered.
 #define DELTA_RADIUS (DELTA_SMOOTH_ROD_OFFSET-DELTA_EFFECTOR_OFFSET-DELTA_CARRIAGE_OFFSET)
 
-// Horizontal distance from effector to tower(without carriages) sh
-#define DELTA_RADIUS_NEW (DELTA_SMOOTH_ROD_OFFSET-DELTA_CARRIAGE_OFFSET)
-
 // Print surface diameter/2 minus unreachable space (avoid collisions with vertical towers).
 #define DELTA_PRINTABLE_RADIUS 70.0
 
 // Effective X/Y positions of the three vertical towers.
 #define SIN_60 0.8660254037844386
 #define COS_60 0.5
-#define PI     3.1415926535898
-#define D2R    PI/180
 #define DELTA_TOWER1_X -SIN_60*DELTA_RADIUS // front left tower
 #define DELTA_TOWER1_Y -COS_60*DELTA_RADIUS
 #define DELTA_TOWER2_X SIN_60*DELTA_RADIUS // front right tower
 #define DELTA_TOWER2_Y -COS_60*DELTA_RADIUS
 #define DELTA_TOWER3_X 0.0 // back middle tower
 #define DELTA_TOWER3_Y DELTA_RADIUS
-
-// Effective X/Y positions of the three vertical towers(new for angle). sh
-#define DELTA_TOWER1_X_NEW -SIN_60*DELTA_RADIUS_NEW // front left tower
-#define DELTA_TOWER1_Y_NEW -COS_60*DELTA_RADIUS_NEW
-#define DELTA_TOWER2_X_NEW SIN_60*DELTA_RADIUS_NEW // front right tower
-#define DELTA_TOWER2_Y_NEW -COS_60*DELTA_RADIUS_NEW
-#define DELTA_TOWER3_X_NEW 0.0 // back middle tower
-#define DELTA_TOWER3_Y_NEW DELTA_RADIUS_NEW
-
 
 // Diagonal rod squared
 #define DELTA_DIAGONAL_ROD_2 pow(DELTA_DIAGONAL_ROD,2)
@@ -382,14 +368,6 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define Z_MAX_POS MANUAL_Z_HOME_POS
 #define Z_MIN_POS 0
 
-#define A_MIN_POS -0.5235987755982989 //sh -30 degree
-#define A_MAX_POS 0.5235987755982989  //sh  30 degree
-#define B_MIN_POS -0.5235987755982989
-#define B_MAX_POS 0.5235987755982989
-#define C_MIN_POS 0
-#define C_MAX_POS 0
-
-
 #define X_MAX_LENGTH (X_MAX_POS - X_MIN_POS)
 #define Y_MAX_LENGTH (Y_MAX_POS - Y_MIN_POS)
 #define Z_MAX_LENGTH (Z_MAX_POS - Z_MIN_POS)
@@ -478,7 +456,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define MANUAL_Z_HOME_POS 200  // For delta: Distance between nozzle and print surface after homing. NCKU
 
 //// MOVEMENT SETTINGS
-#define NUM_AXIS 7 // The axis order in all axis related arrays is X, Y, Z, E, A, B, C  sh
+#define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
 #define HOMING_FEEDRATE {50*60, 50*60, 50*60, 0}  // set the homing speeds (mm/min)
 
 // default settings
